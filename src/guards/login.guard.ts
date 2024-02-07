@@ -25,7 +25,8 @@ export class UserGuard implements CanActivate {
             throw new UnauthorizedException("Not found");
         }
         try {
-            request.user = this.jwtService.verify(token);
+            const decodedToken = this.jwtService.verify(token);
+            request.user = decodedToken.id;
         } catch (error) {
             console.log(error);
             throw new UnauthorizedException();

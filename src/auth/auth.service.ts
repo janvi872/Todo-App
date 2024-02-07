@@ -27,12 +27,25 @@ export class AuthService {
         email,
         password: hashedPassword,
       });
-      console.log(user);
+      // console.log(user);
       const token = this.jwtService.sign({ id: user._id })
 
       return { token };
     } catch (err) {
       console.log(err)
+    }
+  }
+
+  async validateUser(email: string, password: string): Promise<string> {
+    const hashPassword = await bcrypt.hash(password, 10)
+    // const { email, password } = loginDto;
+    const user = await this.userModel.findOne({ email, password: hashPassword });
+    console.log(user);
+    if (!user) {
+      // const newUser = user._id.toString();
+      return null;
+    } else {
+      return user._id.toString();
     }
   }
 

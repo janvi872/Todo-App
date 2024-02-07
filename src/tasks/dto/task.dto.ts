@@ -1,4 +1,5 @@
 import { IsDateString, IsNotEmpty, IsString } from "class-validator";
+import { Task } from "../schemas/task.schema";
 
 
 export class CreateTaskDto {
@@ -15,5 +16,4 @@ export class CreateTaskDto {
     @IsString()
     status: string;
 
-    
 }

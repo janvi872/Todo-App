@@ -1,35 +1,40 @@
-import { Controller, Get, Post, Body, Query, Param, Put, Delete, BadRequestException, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Query, Param, Put, Delete, Request, Headers, BadRequestException, UseGuards, Req } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { CreateTaskDto } from './dto/task.dto';
 import { Query as ExpressQuery } from 'express-serve-static-core';
 import { UserGuard } from 'src/guards/login.guard';
+import { request } from 'express';
 
 @Controller('task')
-@UseGuards(UserGuard)
+// @UseGuards(UserGuard)
 export class TasksController {
   constructor(private readonly tasksService: TasksService) { }
 
-  @Get(':userId')
-  // @UseGuards(UserGuard)
-  async findAllTasks(@Param('userId') userId: string) {
-    return this.tasksService.findAllTasksByUser(userId);
+  @UseGuards(UserGuard)
+  @Get('/')
+  findAllTasks(@Request() request: Request) {
+    const userId = request['user'];
+    console.log(request['user'], "======")
+    const tasks = this.tasksService.findAllTasksByUserId(userId);
+    return tasks;
   }
 
-  @Get('/search/:userId')
-  findAll(@Param('userId') userId: string, @Query() query: ExpressQuery) {
-    console.log(query, "==========")
+  @UseGuards(UserGuard)
+  @Post('/add')
+  create(@Request() req: any, @Body() createTaskDto: CreateTaskDto) {
+    const userId = req['user'];
+    console.log(req['user'], "===userId");
+    return this.tasksService.create(createTaskDto, userId);
+  }
+
+  @UseGuards(UserGuard)
+  @Get('/search')
+  findAll(@Request() request: Request, @Query() query: any) {
+    const userId = request['user'];
+    console.log(userId)
     return this.tasksService.findAllFiltered(userId, query);
   }
 
-  @Post('/add/:userId')
-  async create(@Param('userId') userId: string, @Body() createTaskDto: CreateTaskDto) {
-    const task = this.tasksService.create(createTaskDto, userId);
-    if (task) {
-      return task;
-    } else {
-      throw new BadRequestException("Task  not inserted");
-    }
-  }
 
   @Put(':taskId')
   async updateTask(@Body() createTaskDto: CreateTaskDto, @Param('taskId') taskId: string) {
@@ -41,13 +46,5 @@ export class TasksController {
     return this.tasksService.remove(id);
   }
 
-  // findOne(@Param('id') id: string) {
-  //   return this.tasksService.findOne(+id);
-  // }
-
-  // @Patch(':id')
-  // update(@Param('id') id: string) {
-  //   return this.tasksService.update(+id);
-  // }
 
 }
