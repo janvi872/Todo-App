@@ -14,7 +14,7 @@ export class Task {
     @Prop()
     due_date: string;
 
-    @Prop()
+    @Prop({ default: "Incomplete" })
     status: string;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true })

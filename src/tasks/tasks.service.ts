@@ -28,9 +28,9 @@ export class TasksService {
     const currentPage = Number(query.page) || 1;
     const skip = itemPerPage * (currentPage - 1);
     console.log(userId)
-    const title = query.title ?
+    const due_date = query.title ?
       {
-        "title": {
+        "due_date": {
           $regex: query.title,
           $options: 'i',
         }
@@ -42,25 +42,32 @@ export class TasksService {
       }
     } : {};
     const userFilter = { user: userId };
-    return await this.taskModel.find({ ...title, ...status, ...userFilter }).populate('user').limit(itemPerPage).skip(skip).exec();
+    return await this.taskModel.find({ ...due_date, ...status, ...userFilter }).populate('user').limit(itemPerPage).skip(skip).exec();
   }
 
-
-  async updateTask(taskId: string, createTaskDto: CreateTaskDto): Promise<Task> {
-    return await this.taskModel.findByIdAndUpdate(taskId, createTaskDto).exec();
-    // if (!newTask) {
-    //   throw new NotFoundException("Task not found");
-    // }
-    // return newTask;
+  async updateStatus(taskId: string): Promise<string> {
+    const task = await this.taskModel.findByIdAndUpdate(taskId, { status: "completed" }).exec();
+    console.log(taskId);
+    if (!task) {
+      throw new NotFoundException("task not found");
+    };
+    return "Update successfully";
   }
 
-  async remove(id: string): Promise<Task> {
-    // console.log(`User Deleted ${id}`)
+  async updateTask(taskId: string, createTaskDto: CreateTaskDto): Promise<string> {
+    const updatedTask = await this.taskModel.findByIdAndUpdate(taskId, createTaskDto).exec();
+    if (!updatedTask) {
+      throw new NotFoundException("Task not found");
+    }
+    return "Task successfully updated.";
+  }
+
+  async remove(id: string): Promise<string> {
     const task = await this.taskModel.findByIdAndDelete(id).exec();
     if (!task) {
-      throw new NotFoundException("User not found");
+      throw new NotFoundException("Task not found");
     }
-    return task;
+    return "Task deleted";
   }
 
   // findOne(id: number) {

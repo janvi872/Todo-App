@@ -1,6 +1,4 @@
-/* eslint-disable prettier/prettier */
-// import { UsersService } from 'src/users/user.service';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import { User } from 'src/auth/schema/user.schema';
 import { Model } from 'mongoose';
 import { JwtService } from '@nestjs/jwt';
@@ -8,7 +6,6 @@ import * as bcrypt from 'bcrypt';
 import { SignUpDto } from './dto/signup.dto';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoginDto } from './dto/login.dto';
-
 @Injectable()
 export class AuthService {
   constructor(
@@ -16,9 +13,18 @@ export class AuthService {
     private readonly userModel: Model<User>,
     private jwtService: JwtService) { }
 
+
+  async findAll(): Promise<User[]> {
+    const users = await this.userModel.find().exec();
+    if (!users) {
+      throw new NotFoundException("User not found.")
+    } return users;
+  }
+
+
   async signUp(signUpDto: SignUpDto) {
     try {
-      const { name, email, password } = signUpDto;
+      const { name, email, password, role } = signUpDto;
       console.log('Creating user in the database');
       const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -26,9 +32,10 @@ export class AuthService {
         name,
         email,
         password: hashedPassword,
+        role,
       });
       // console.log(user);
-      const token = this.jwtService.sign({ id: user._id })
+      const token = this.jwtService.sign({ id: user._id, role: user.role })
 
       return { token };
     } catch (err) {
@@ -36,21 +43,8 @@ export class AuthService {
     }
   }
 
-  async validateUser(email: string, password: string): Promise<string> {
-    const hashPassword = await bcrypt.hash(password, 10)
-    // const { email, password } = loginDto;
-    const user = await this.userModel.findOne({ email, password: hashPassword });
-    console.log(user);
-    if (!user) {
-      // const newUser = user._id.toString();
-      return null;
-    } else {
-      return user._id.toString();
-    }
-  }
-
   async login(loginDto: LoginDto): Promise<{ token: string }> {
-    const { email, password } = loginDto;
+    const { email, password, role } = loginDto;
 
     const user = await this.userModel.findOne({ email })
 
@@ -63,8 +57,16 @@ export class AuthService {
     if (!isPasswordMatched) {
       throw new UnauthorizedException('Invalid password.');
     }
-    const token = this.jwtService.sign({ id: user._id })
+    const token = this.jwtService.sign({ id: user._id, role: user.role })
     return { token };
   }
 
+  async remove(userId: string) {
+    // const userId = 
+    const response = await this.userModel.findByIdAndDelete(userId).exec();
+    console.log(response);
+    if (!response && response == null) {
+      throw new NotFoundException("User not found");
+    } return "User Deleted";
+  }
 }

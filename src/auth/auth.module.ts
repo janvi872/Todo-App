@@ -7,10 +7,12 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { PassportModule } from '@nestjs/passport';
 import { JwtModule } from '@nestjs/jwt';
 import { UserSchema } from 'src/auth/schema/user.schema';
+import { Reflector } from '@nestjs/core';
+import { RoleGuard } from 'src/auth/guards/role.guard';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.local.env'] }), 
+    ConfigModule.forRoot({ isGlobal: true, envFilePath: ['.local.env'] }),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
@@ -26,6 +28,8 @@ import { UserSchema } from 'src/auth/schema/user.schema';
   ],
   controllers: [AuthController],
   providers: [AuthService],
-  exports: [AuthService, JwtModule],
+  exports: [AuthService, JwtModule,],
 })
-export class AuthModule { }
+export class AuthModule {
+
+}

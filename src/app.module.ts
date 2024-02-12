@@ -6,6 +6,7 @@ import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { TasksModule } from './tasks/tasks.module';
+import { UserModule } from './user/user.module';
 
 
 @Module({
@@ -26,7 +27,7 @@ import { TasksModule } from './tasks/tasks.module';
     //     database: configService.get("DATABASE_NAME"),
     // })
     // }),
-    AuthModule, TasksModule
+    AuthModule, TasksModule, UserModule
   ],
   controllers: [],
   providers: [],
